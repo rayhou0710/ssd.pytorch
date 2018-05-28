@@ -23,7 +23,7 @@ def str2bool(v):
 parser = argparse.ArgumentParser(
     description='Single Shot MultiBox Detector Training With Pytorch')
 train_set = parser.add_mutually_exclusive_group()
-parser.add_argument('--dataset', default='VOC', choices=['VOC', 'COCO'],
+parser.add_argument('--dataset', default='VOC', choices=['VOC', 'COCO', 'Vehicle'],
                     type=str, help='VOC or COCO')
 parser.add_argument('--dataset_root', default=VOC_ROOT,
                     help='Dataset root directory path')
@@ -69,7 +69,15 @@ if not os.path.exists(args.save_folder):
 
 
 def train():
-    if args.dataset == 'COCO':
+    if args.dataset == 'Vehicle':
+        args.dataset_root = '~/pytorch/detectron/detectron/datasets/data'
+        cfg = coco
+        dataset = COCODetection(root=args.dataset_root,
+                                image_set='vehicle',
+                                transform=SSDAugmentation(cfg['min_dim'],
+                                                          MEANS))
+
+    elif args.dataset == 'COCO':
         if args.dataset_root == VOC_ROOT:
             if not os.path.exists(COCO_ROOT):
                 parser.error('Must specify dataset_root if specifying dataset')
@@ -166,10 +174,10 @@ def train():
 
         if args.cuda:
             images = Variable(images.cuda())
-            targets = [Variable(ann.cuda(), volatile=True) for ann in targets]
+            targets = [Variable(ann.cuda()) for ann in targets]
         else:
             images = Variable(images)
-            targets = [Variable(ann, volatile=True) for ann in targets]
+            targets = [Variable(ann) for ann in targets]
         # forward
         t0 = time.time()
         out = net(images)
@@ -180,12 +188,12 @@ def train():
         loss.backward()
         optimizer.step()
         t1 = time.time()
-        loc_loss += loss_l.data[0]
-        conf_loss += loss_c.data[0]
+        loc_loss += loss_l.data.item() #[0]
+        conf_loss += loss_c.data.item() #[0]
 
         if iteration % 10 == 0:
             print('timer: %.4f sec.' % (t1 - t0))
-            print('iter ' + repr(iteration) + ' || Loss: %.4f ||' % (loss.data[0]), end=' ')
+            print('iter ' + repr(iteration) + ' || Loss: %.4f ||' % (loss.data.item()), end=' ')
 
         if args.visdom:
             update_vis_plot(iteration, loss_l.data[0], loss_c.data[0],
@@ -211,7 +219,7 @@ def adjust_learning_rate(optimizer, gamma, step):
 
 
 def xavier(param):
-    init.xavier_uniform(param)
+    init.xavier_uniform_(param)
 
 
 def weights_init(m):
