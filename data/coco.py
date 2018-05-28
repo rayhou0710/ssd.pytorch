@@ -13,21 +13,22 @@ IMAGES = 'images'
 ANNOTATIONS = 'annotations'
 COCO_API = 'PythonAPI'
 INSTANCES_SET = 'instances_{}.json'
-COCO_CLASSES = ('person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus',
-                'train', 'truck', 'boat', 'traffic light', 'fire', 'hydrant',
-                'stop sign', 'parking meter', 'bench', 'bird', 'cat', 'dog',
-                'horse', 'sheep', 'cow', 'elephant', 'bear', 'zebra',
-                'giraffe', 'backpack', 'umbrella', 'handbag', 'tie',
-                'suitcase', 'frisbee', 'skis', 'snowboard', 'sports ball',
-                'kite', 'baseball bat', 'baseball glove', 'skateboard',
-                'surfboard', 'tennis racket', 'bottle', 'wine glass', 'cup',
-                'fork', 'knife', 'spoon', 'bowl', 'banana', 'apple',
-                'sandwich', 'orange', 'broccoli', 'carrot', 'hot dog', 'pizza',
-                'donut', 'cake', 'chair', 'couch', 'potted plant', 'bed',
-                'dining table', 'toilet', 'tv', 'laptop', 'mouse', 'remote',
-                'keyboard', 'cell phone', 'microwave oven', 'toaster', 'sink',
-                'refrigerator', 'book', 'clock', 'vase', 'scissors',
-                'teddy bear', 'hair drier', 'toothbrush')
+COCO_CLASSES = ('truck', 'pick-up truck', 'car')
+# COCO_CLASSES = ('person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus',
+#                 'train', 'truck', 'boat', 'traffic light', 'fire', 'hydrant',
+#                 'stop sign', 'parking meter', 'bench', 'bird', 'cat', 'dog',
+#                 'horse', 'sheep', 'cow', 'elephant', 'bear', 'zebra',
+#                 'giraffe', 'backpack', 'umbrella', 'handbag', 'tie',
+#                 'suitcase', 'frisbee', 'skis', 'snowboard', 'sports ball',
+#                 'kite', 'baseball bat', 'baseball glove', 'skateboard',
+#                 'surfboard', 'tennis racket', 'bottle', 'wine glass', 'cup',
+#                 'fork', 'knife', 'spoon', 'bowl', 'banana', 'apple',
+#                 'sandwich', 'orange', 'broccoli', 'carrot', 'hot dog', 'pizza',
+#                 'donut', 'cake', 'chair', 'couch', 'potted plant', 'bed',
+#                 'dining table', 'toilet', 'tv', 'laptop', 'mouse', 'remote',
+#                 'keyboard', 'cell phone', 'microwave oven', 'toaster', 'sink',
+#                 'refrigerator', 'book', 'clock', 'vase', 'scissors',
+#                 'teddy bear', 'hair drier', 'toothbrush')
 
 
 def get_label_map(label_file):
@@ -87,10 +88,9 @@ class COCODetection(data.Dataset):
                  target_transform=COCOAnnotationTransform(), dataset_name='MS COCO'):
         sys.path.append(osp.join(root, COCO_API))
         from pycocotools.coco import COCO
-        if image_set == 'vehicle':
-            self.root = osp.join(root, IMAGES, image_set)
-            self.coco = COCO(osp.join(root, ANNOTATIONS,
-                                      INSTANCES_SET.format(image_set)))
+        if image_set != 'train2014':
+            self.root = osp.join(root, image_set)
+            self.coco = COCO(osp.join(root, ANNOTATIONS, image_set+'.json'))
             self.ids = list(self.coco.imgToAnns.keys())
             self.transform = transform
             self.target_transform = target_transform

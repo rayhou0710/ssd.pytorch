@@ -70,10 +70,10 @@ if not os.path.exists(args.save_folder):
 
 def train():
     if args.dataset == 'Vehicle':
-        args.dataset_root = '~/pytorch/detectron/detectron/datasets/data'
+        args.dataset_root = '/home/rayhou/pytorch/detectron/detectron/datasets/data/vehicle'
         cfg = coco
         dataset = COCODetection(root=args.dataset_root,
-                                image_set='vehicle',
+                                image_set='vehicle_train',
                                 transform=SSDAugmentation(cfg['min_dim'],
                                                           MEANS))
 
@@ -155,12 +155,15 @@ def train():
                                   shuffle=True, collate_fn=detection_collate,
                                   pin_memory=True)
     # create batch iterator
-    batch_iterator = iter(data_loader)
+    # batch_iterator = iter(data_loader)
+    batch_iterator = None
     for iteration in range(args.start_iter, cfg['max_iter']):
-        if args.visdom and iteration != 0 and (iteration % epoch_size == 0):
-            update_vis_plot(epoch, loc_loss, conf_loss, epoch_plot, None,
-                            'append', epoch_size)
+        # if args.visdom and iteration != 0 and (iteration % epoch_size == 0):
+        #     update_vis_plot(epoch, loc_loss, conf_loss, epoch_plot, None,
+        #                     'append', epoch_size)
+        if (not batch_iterator) or (iteration % epoch_size ==0):
             # reset epoch loss counters
+            batch_iterator = iter(data_loader)
             loc_loss = 0
             conf_loss = 0
             epoch += 1
