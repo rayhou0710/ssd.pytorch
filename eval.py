@@ -12,6 +12,7 @@ from torch.autograd import Variable
 from data import VOC_ROOT, VOCAnnotationTransform, VOCDetection, BaseTransform
 from data import VOC_CLASSES as labelmap
 import torch.utils.data as data
+from data import *
 
 from ssd import build_ssd
 
@@ -377,8 +378,8 @@ def test_net(save_folder, net, cuda, dataset, transform, top_k,
 
     for i in range(num_images):
         im, gt, h, w = dataset.pull_item(i)
-
         x = Variable(im.unsqueeze(0))
+        x = x.type(torch.FloatTensor)
         if args.cuda:
             x = x.cuda()
         _t['im_detect'].tic()
@@ -420,15 +421,18 @@ def evaluate_detections(box_list, output_dir, dataset):
 
 if __name__ == '__main__':
     # load net
-    num_classes = len(labelmap) + 1                      # +1 for background
+    num_classes = len(labelmap) + 1    # +1 for background 
+    num_classes = 201               
     net = build_ssd('test', 300, num_classes)            # initialize SSD
     net.load_state_dict(torch.load(args.trained_model))
     net.eval()
     print('Finished loading model!')
     # load data
-    dataset = VOCDetection(args.voc_root, [('2007', set_type)],
-                           BaseTransform(300, dataset_mean),
-                           VOCAnnotationTransform())
+    # dataset = VOCDetection(args.voc_root, [('2007', set_type)],
+    #                        BaseTransform(300, dataset_mean),
+    #                        VOCAnnotationTransform())
+    dataset = COCODetection(root='/home/rayhou/pytorch/detectron/detectron/datasets/data/vehicle',
+                                image_set='vehicle_test')
     if args.cuda:
         net = net.cuda()
         cudnn.benchmark = True

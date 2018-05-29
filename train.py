@@ -39,7 +39,7 @@ parser.add_argument('--num_workers', default=4, type=int,
                     help='Number of workers used in dataloading')
 parser.add_argument('--cuda', default=True, type=str2bool,
                     help='Use CUDA to train model')
-parser.add_argument('--lr', '--learning-rate', default=1e-3, type=float,
+parser.add_argument('--lr', '--learning-rate', default=5e-4, type=float,
                     help='initial learning rate')
 parser.add_argument('--momentum', default=0.9, type=float,
                     help='Momentum value for optim')
@@ -71,12 +71,11 @@ if not os.path.exists(args.save_folder):
 def train():
     if args.dataset == 'Vehicle':
         args.dataset_root = '/home/rayhou/pytorch/detectron/detectron/datasets/data/vehicle'
-        cfg = coco
+        cfg = vehicle
         dataset = COCODetection(root=args.dataset_root,
                                 image_set='vehicle_train',
                                 transform=SSDAugmentation(cfg['min_dim'],
                                                           MEANS))
-
     elif args.dataset == 'COCO':
         if args.dataset_root == VOC_ROOT:
             if not os.path.exists(COCO_ROOT):
@@ -202,7 +201,7 @@ def train():
             update_vis_plot(iteration, loss_l.data[0], loss_c.data[0],
                             iter_plot, epoch_plot, 'append')
 
-        if iteration != 0 and iteration % 5000 == 0:
+        if iteration != 0 and iteration % 2000 == 0:
             print('Saving state, iter:', iteration)
             torch.save(ssd_net.state_dict(), 'weights/ssd300_COCO_' +
                        repr(iteration) + '.pth')
